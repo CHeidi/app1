@@ -1,0 +1,232 @@
+{% assign puzzle_prod = true %}
+<div class="container ">
+	<div class="puzzle_container">
+		{% if section.settings.section_title.size > 0 %}
+			<h4 class="section_heading">{{ section.settings.section_title | escape }}</h4>
+		{% endif %}
+	
+		<div class="puzzle_filters">
+			{% if section.settings.custom_tags.size > 0 %}
+				<div class="isotope-filters-list-wrap">
+					{% assign tagList = section.settings.custom_tags | split: ',' %}
+	
+					{% if tagList.size > 0 %}
+						<ul id="tag_filter" class="isotope-filters-list">
+							<li><span class="filter_selector active" value="all" data-isotope-filter="*" id="filter_all">All</span></li>
+	
+							{% for tagItem in tagList %}
+								<li><span class="filter_selector" value="{{ tagItem | handleize }}" data-isotope-filter="{{ tagItem | handleize }}">{{ tagItem | escape  }}</span></li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+			{% endif %}
+		</div>
+	
+		<div class="row product_listing__main products_listing_puzzle">
+			{% for product in collections.all.products %}
+				{% assign prod_image = false %}
+				{% for block in section.blocks %}
+					{% if product.handle == all_products[block.settings.single_product].handle %}
+						
+						{% if block.settings.custom_image %}
+							{% assign prod_image = true %}
+							{% assign prod_image_src = block.settings.custom_image %}
+						{% endif %}
+	
+						{% case block.settings.block_size %}
+							{% when 'small' %}
+								{% assign item_class = 'item_small' %}{%- assign item_size = '270x250' -%}
+							{% when 'medium_horizontal' %}
+								{% assign item_class = 'item_medium_horizontal' %}{%- assign item_size = '570x250' -%}
+							{% when 'medium_vertical' %}
+								{% assign item_class = 'item_medium_vertical' %}{%- assign item_size = '270x530' -%}
+							{% when 'large' %}
+								{% assign item_class = 'item_large' %}{%- assign item_size = '570x530' -%}
+						{% endcase %}
+	
+						{% assign prod_tags = ' ' | split: ' ' %}
+						{% for tag in product.tags %}
+							{% assign prod_tags_tmp = tag | split: ' ' %}
+							{% assign prod_tags = prod_tags | concat:prod_tags_tmp %}
+						{% endfor %}
+						{% assign prod_tags_new = prod_tags | downcase %}
+	
+						<div class="puzzle_item {{ item_class }}" data-filter='{{ prod_tags_new }}' data-new="">
+							{% include 'product-listing-item' with puzzle_prod, item_size, prod_image, prod_image_src %}
+						</div>
+	
+					{% endif %}
+				{% endfor %}
+				
+			{% endfor %}
+		</div>
+	</div>
+</div>
+<div class="container button_wrap">
+	{% if section.settings.button_link.size > 0 and section.settings.button_text.size > 0 %}
+		<a class="btn sect_btn" href="{{ section.settings.button_link }}">{{ section.settings.button_text }}</a>
+	{% endif %}
+</div>
+
+
+{% schema %}
+{
+	"name": "Products gallery",
+	"class": "section section_homepage index_products_gallery",
+	"max_blocks": 12,
+	"settings": [
+		{
+			"type": "text",
+			"id": "section_title",
+			"label": "Heading",
+			"default": "Our Gallery"
+		},
+		{
+			"type": "text",
+			"id": "custom_tags",
+			"label": "Filter by tag (one word)",
+			"info": "Add tags separated by commas!"
+		},
+		{
+			"type": "url",
+			"id": "button_link",
+			"label": "Button link"
+		},
+		{
+			"type": "text",
+			"id": "button_text",
+			"label": "Button text"
+		}
+	],
+	"blocks": [
+		{
+			"type": "product",
+			"name": "Product",
+			"settings": [
+				{
+					"type": "product",
+					"id": "single_product",
+					"label": "Choose product"
+				},
+				{
+					"type": "select",
+					"id": "block_size",
+					"label": "Block size",
+					"options": [
+						{
+							"label": "Small (25%X33%)",
+							"value": "small"
+						},
+						{
+							"label": "Medium horiz (50%X33%)",
+							"value": "medium_horizontal"
+						},
+						{
+							"label": "Medium vert (25%X66%)",
+							"value": "medium_vertical"
+						},
+						{
+							"label": "Large (50%X66%)",
+							"value": "large"
+						}
+					]
+				},
+				{
+					"type": "image_picker",
+					"id": "custom_image",
+					"label": "Custom image (optional)"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "Products gallery",
+			"category": "Products"
+		}
+	]
+}
+{% endschema %}
+
+{% javascript %}
+jQuery(document).ready(function($) {
+
+	var filterValue = '.';
+
+	$('.filter_selector').on('click', function(e) {
+		var activeFilter = $(this);
+
+		$('.filter_selector').each(function(i) {
+			$(this).removeClass('active');
+		});
+
+		$(this).addClass('active');
+
+		filterValue = $(this).attr('data-isotope-filter');
+
+		var filterAll = '*';
+
+		var filterValueNew = '.';
+
+		$('.puzzle_item').each(function(i) {
+			if ( $(this).attr('data-filter').includes(filterValue)) {
+				$(this).addClass(filterValue);
+			};
+		});
+
+		if ( filterValue == filterAll ) {
+			filterValueNew = '.puzzle_item';
+		}
+		else {
+			filterValueNew = '.' + filterValue;
+		};
+
+		var isofil = $('.products_listing_puzzle').isotope({ 
+			filter: filterValueNew
+		});
+		
+	});
+
+
+	$('#filter_all').on('click', function() {
+	
+		$('.puzzle_item').each(function(i) {
+			var itemClass = '.';
+
+			if ( $(this).hasClass('item_small') ) {
+				itemClass = 'item_small';
+			}
+			else if ( $(this).hasClass('item_medium_horizontal') ) {
+				itemClass = 'item_medium_horizontal';
+			}
+			else if ( $(this).hasClass('item_medium_vertical') ) {
+				itemClass = 'item_medium_vertical';
+			}
+			else if ( $(this).hasClass('item_large') ) {
+				itemClass = 'item_large';
+			};
+	
+			$(this).removeClass();
+			$(this).addClass('puzzle_item');
+			$(this).addClass(itemClass);
+			
+		});
+
+	});
+
+
+	$('.puzzle_container').each(function(i) {
+	
+		var isotp = $('.products_listing_puzzle').isotope({
+	
+		  	itemSelector: '.puzzle_item',
+		  	masonry: {
+		   		gutter: 0,
+		   		horizontalOrder: false,
+		   		
+		  	}
+		});
+	});
+});
+{% endjavascript %}

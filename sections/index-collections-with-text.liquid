@@ -1,0 +1,196 @@
+{% if section.settings.hide_section == false %}
+
+{%- assign coll_count = 0 | plus: 0 -%}
+{% for collection in collections %}
+	{%- assign coll_count = coll_count | plus: 1 -%}
+{% endfor %}
+{%- assign coll_count_half = coll_count | divided_by: 2 -%}
+
+<div class="container">
+	<div class="row">
+		<div class="item_collect col-sm-7 {% if section.settings.layout == 'right' %}coll_right{% endif %}">
+			<ul class="list_coll list_column_1">
+				{% for collection in collections limit:coll_count_half %}
+					<a href="{{ collection.url }}" class="collection_link">
+						{{ collection.title }}
+					</a>
+				{% endfor %}
+			</ul>
+
+			<ul class="list_coll list_column_2">
+				{% for collection in collections offset:coll_count_half %}
+					<a href="{{ collection.url }}" class="collection_link">
+						{{ collection.title }}
+					</a>
+				{% endfor %}
+			</ul>
+
+		</div>
+
+		<div class="item_txt col-sm-5 {% if section.settings.centred %}centred{% endif %}">
+			<div>
+				{% for block in section.blocks %}
+					{% case block.type %}
+						{% when 'heading' %}
+							{% if block.settings.text.size > 0 %}
+								<h2>{{ block.settings.text }}</h2>
+							{% endif %}
+
+						{% when 'subheading' %}
+							{% if block.settings.text.size > 0 %}
+								<h4>{{ block.settings.text }}</h4>
+							{% endif %}
+						
+						{% when 'text' %}
+							{% if block.settings.text.size > 0 %}
+								<p>{{ block.settings.text }}</p>
+							{% endif %}
+
+						{% when 'list' %}
+							{% if block.settings.text.size > 0 %}
+								<div>{{ block.settings.text }}</div>
+							{% endif %}
+
+						{% when 'button' %}
+							{% if block.settings.button_link.size > 0 and block.settings.button_text.size > 0 %}
+								<a class="btn" href="{{ block.settings.button_link }}">{{ block.settings.button_text }}</a>
+							{% endif %}
+
+					{% endcase %}
+				{% endfor %}
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{% endif %}
+
+{% schema %}
+{
+	"name": "Collections with text",
+	"class": "section section_homepage section_collections-with-text",
+	"max_blocks": 4,
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "hide_section",
+			"label": "Hide section",
+			"default":   false
+		},
+		{
+			"type": "select",
+			"id": "layout",
+			"label": "Layout",
+			"default": "left",
+			"options": [
+				{
+					"value": "left",
+					"label": "Collections on left"
+				},
+				{
+					"value": "right",
+					"label": "Collections on right"
+				}
+			]
+		}
+	],
+	"blocks": [
+
+		// HEADING =========================================================================================
+		{
+			"type": "heading",
+			"name": "Heading",
+			"settings": [
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Heading"
+				}
+			]
+		},
+
+		// SUBHEADING =====================================================================================
+		{
+			"type": "subheading",
+			"name": "Subheading",
+			"settings": [
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Subheading"
+				}
+			]
+		},
+
+		// TEXT ==========================================================================================
+		{
+			"type": "text",
+			"name": "Text",
+			"settings": [
+				{
+					"type": "text",
+					"id": "text",
+					"label": "Text"
+				}
+			]
+		},
+
+		// LIST ==========================================================================================
+		{
+			"type": "list",
+			"name": "List",
+			"settings": [
+				{
+					"type": "richtext",
+					"id": "text",
+					"label": "Text"
+				}
+			]
+		},
+
+
+		// BUTTON =========================================================================================
+		{
+			"type": "button",
+			"name": "Button",
+			"settings": [
+				{
+					"type": "url",
+					"id": "button_link",
+					"label": "Button link"
+				},
+				{
+					"type": "text",
+					"id": "button_text",
+					"label": "Button text"
+				}
+			]
+		}
+
+	],
+
+	"presets": [
+		{
+			"name": "Collections with text",
+			"category": "Products",
+			"blocks": [
+				{
+					"type": "heading"
+				},
+				{
+					"type": "subheading"
+				},
+				{
+					"type": "text"
+				}
+			]
+		}
+	]
+}
+{% endschema %}
+
+
+{% stylesheet 'scss' %}
+
+{% endstylesheet %}
